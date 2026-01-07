@@ -1,0 +1,14 @@
+{
+  "name": "logistima-delivery",
+  "version": "1.0.0",
+  "description": "LogistiMa - Delivery dispatch system",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "worker": "node src/worker.js",
+    "test": "jest"
+  },
+  "author": "LogistiMa Team",
+  "license": "MIT"
+}
