@@ -14,8 +14,11 @@ router.post('/', packageController.createPackage);
 // PUT 
 router.put('/:id', packageController.updatePackage);
 
-// PUT 
+// PUT ( manual assign)
 router.put('/:id/assign', packageController.assignPackage);
+
+// PUT auto-assign 
+router.put('/:id/auto-assign', packageController.autoAssignPackage);
 
 // DELETE package
 router.delete('/:id', packageController.deletePackage);
