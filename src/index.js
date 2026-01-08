@@ -5,6 +5,13 @@ const config = require('./config');
 const { connectDatabase } = require('./config/database');
 const { connectRedis } = require('./config/redis');
 
+// Import routes
+const zoneRoutes = require('./routes/zoneRoutes');
+const delivererRoutes = require('./routes/delivererRoutes');
+const packageRoutes = require('./routes/packageRoutes');
+const deliveryRoutes = require('./routes/deliveryRoutes');
+
+
 const app = express();
 
 // Middleware
@@ -34,6 +41,12 @@ app.get('/api', (req, res) => {
     }
   });
 });
+
+// Connect routes
+app.use('/api/zones', zoneRoutes);
+app.use('/api/deliverers', delivererRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/deliveries', deliveryRoutes);
 
 // 404 Handler
 app.use((req, res) => {
