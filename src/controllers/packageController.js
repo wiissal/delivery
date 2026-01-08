@@ -103,40 +103,53 @@ exports.updatePackage = async (req, res) => {
   }
 };
 
-// Assign package to deliverer (Smart Dispatcher will be here later)
+// Assign package to deliverer (WITH SMART DISPATCHER)
 exports.assignPackage = async (req, res) => {
   try {
+    const packageId = req.params.id;
     const { delivererId } = req.body;
-    const package = await Package.findByPk(req.params.id);
     
-    if (!package) {
-      return res.status(404).json({ error: 'Package not found' });
+    // Use smart dispatcher with transaction locking
+    const result = await dispatcherService.assignPackageToDeliverer(
+      packageId, 
+      delivererId
+    );
+    
+    if (!result.success) {
+      return res.status(result.code).json({ 
+        error: result.error 
+      });
     }
     
-    if (package.status !== 'pending') {
-      return res.status(400).json({ error: 'Package already assigned' });
-    }
-    
-    const deliverer = await Deliverer.findByPk(delivererId);
-    if (!deliverer) {
-      return res.status(404).json({ error: 'Deliverer not found' });
-    }
-    
-    // Check capacity
-    if (deliverer.currentCapacity >= deliverer.maxCapacity) {
-      return res.status(409).json({ error: 'Deliverer at max capacity' });
-    }
-    
-    // Assign package
-    await package.update({
-      delivererId,
-      status: 'assigned',
+    res.status(201).json({
+      message: 'Package assigned successfully',
+      data: result.data
     });
     
-    // Update deliverer capacity
-    await deliverer.increment('currentCapacity');
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Auto-assign package to best available deliverer
+exports.autoAssignPackage = async (req, res) => {
+  try {
+    const packageId = req.params.id;
     
-    res.json(package);
+    // Use smart dispatcher to find and assign best deliverer
+    const result = await dispatcherService.autoAssignPackage(packageId);
+    
+    if (!result.success) {
+      return res.status(result.code).json({ 
+        error: result.error 
+      });
+    }
+    
+    res.status(201).json({
+      message: 'Package auto-assigned successfully',
+      data: result.data
+    });
+    
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
