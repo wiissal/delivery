@@ -56,14 +56,21 @@ exports.getDeliveryById = async (req, res) => {
   }
 };
 
-// Create new delivery
+// Create new delivery (TRIGGER BACKGROUND JOBS)
 exports.createDelivery = async (req, res) => {
   try {
     const { packageId, delivererId, scheduledAt, notes } = req.body;
     
+    // Get package details for jobs
+    const package = await Package.findByPk(packageId);
+    if (!package) {
+      return res.status(404).json({ error: 'Package not found' });
+    }
+    
     // Generate delivery code
     const deliveryCode = `DEL-${Date.now()}`;
     
+    // Create delivery
     const delivery = await Delivery.create({
       deliveryCode,
       packageId,
@@ -72,9 +79,20 @@ exports.createDelivery = async (req, res) => {
       notes,
     });
     
-    // we gonna add Trigger background jobs here 
+    // Trigger background jobs (route calculation + receipt generation)
+    await queueService.processDelivery({
+      id: delivery.id,
+      deliveryCode: delivery.deliveryCode,
+      pickupAddress: package.pickupAddress,
+      deliveryAddress: package.deliveryAddress,
+      recipientName: package.recipientName,
+      recipientPhone: package.recipientPhone,
+    });
     
-    res.status(201).json(delivery);
+    res.status(201).json({
+      message: 'Delivery created and jobs queued',
+      delivery,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -111,6 +129,16 @@ exports.updateDeliveryStatus = async (req, res) => {
     res.json(delivery);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+// Get queue statistics
+exports.getQueueStats = async (req, res) => {
+  try {
+    const stats = await queueService.getQueueStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
