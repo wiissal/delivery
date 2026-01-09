@@ -62,8 +62,8 @@ exports.createDelivery = async (req, res) => {
     const { packageId, delivererId, scheduledAt, notes } = req.body;
     
     // Get package details for jobs
-    const package = await Package.findByPk(packageId);
-    if (!package) {
+    const pkg = await Package.findByPk(packageId);
+    if (!pkg) {
       return res.status(404).json({ error: 'Package not found' });
     }
     
@@ -83,10 +83,10 @@ exports.createDelivery = async (req, res) => {
     await queueService.processDelivery({
       id: delivery.id,
       deliveryCode: delivery.deliveryCode,
-      pickupAddress: package.pickupAddress,
-      deliveryAddress: package.deliveryAddress,
-      recipientName: package.recipientName,
-      recipientPhone: package.recipientPhone,
+      pickupAddress: pkg.pickupAddress,
+      deliveryAddress: pkg.deliveryAddress,
+      recipientName: pkg.recipientName,
+      recipientPhone: pkg.recipientPhone,
     });
     
     res.status(201).json({
