@@ -1,0 +1,485 @@
+{
+  "info": {
+    "name": "LogistiMa - Delivery API",
+    "description": "Complete API collection for LogistiMa delivery dispatch system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the API is running"
+      }
+    },
+    {
+      "name": "API Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api",
+          "host": ["{{base_url}}"],
+          "path": ["api"]
+        },
+        "description": "Get API information and available endpoints"
+      }
+    },
+    {
+      "name": "Zones",
+      "item": [
+        {
+          "name": "Get All Zones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/zones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "zones"]
+            },
+            "description": "Retrieve all active zones (with caching)"
+          }
+        },
+        {
+          "name": "Get Zone by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/zones/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "zones", "1"]
+            },
+            "description": "Get a specific zone by ID"
+          }
+        },
+        {
+          "name": "Create Zone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sidi Maarif\",\n  \"city\": \"Casablanca\",\n  \"coordinates\": {\n    \"lat\": 33.5731,\n    \"lng\": -7.5898\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/zones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "zones"]
+            },
+            "description": "Create a new delivery zone"
+          }
+        },
+        {
+          "name": "Update Zone",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sidi Maarif Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/zones/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "zones", "1"]
+            },
+            "description": "Update a zone (invalidates cache)"
+          }
+        },
+        {
+          "name": "Delete Zone",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/zones/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "zones", "1"]
+            },
+            "description": "Soft delete a zone (sets isActive to false)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deliverers",
+      "item": [
+        {
+          "name": "Get All Deliverers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliverers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliverers"]
+            },
+            "description": "Get all deliverers with their current zones"
+          }
+        },
+        {
+          "name": "Get Available Deliverers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliverers/available?zoneId=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliverers", "available"],
+              "query": [
+                {
+                  "key": "zoneId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get available deliverers (optionally filtered by zone)"
+          }
+        },
+        {
+          "name": "Get Deliverer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliverers/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliverers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Deliverer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Bennani\",\n  \"phone\": \"0612345678\",\n  \"email\": \"ahmed@logistima.ma\",\n  \"vehicleType\": \"scooter\",\n  \"maxCapacity\": 10,\n  \"currentZoneId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/deliverers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliverers"]
+            }
+          }
+        },
+        {
+          "name": "Update Deliverer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAvailable\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/deliverers/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliverers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Deliverer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliverers/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliverers", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Packages",
+      "item": [
+        {
+          "name": "Get All Packages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/packages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages"]
+            }
+          }
+        },
+        {
+          "name": "Get Packages by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/packages?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            },
+            "description": "Filter packages by status: pending, assigned, in_transit, delivered, cancelled"
+          }
+        },
+        {
+          "name": "Get Package by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/packages/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trackingNumber\": \"TRK-2024-001\",\n  \"senderName\": \"Mohammed Alami\",\n  \"senderPhone\": \"0611111111\",\n  \"recipientName\": \"Fatima Zahra\",\n  \"recipientPhone\": \"0622222222\",\n  \"pickupAddress\": \"123 Rue Mohamed V, Casablanca\",\n  \"deliveryAddress\": \"456 Boulevard Anfa, Casablanca\",\n  \"weight\": 2.5,\n  \"zoneId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/packages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages"]
+            }
+          }
+        },
+        {
+          "name": "Assign Package (Manual)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"delivererId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/packages/1/assign",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages", "1", "assign"]
+            },
+            "description": "Manually assign package to specific deliverer (with transaction locking)"
+          }
+        },
+        {
+          "name": "Auto-Assign Package",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/packages/1/auto-assign",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages", "1", "auto-assign"]
+            },
+            "description": "Automatically assign to best available deliverer"
+          }
+        },
+        {
+          "name": "Update Package",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_transit\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/packages/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Package",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/packages/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "packages", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deliveries",
+      "item": [
+        {
+          "name": "Get All Deliveries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliveries",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries"]
+            }
+          }
+        },
+        {
+          "name": "Get Deliveries by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliveries?status=scheduled",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "scheduled"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Delivery by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliveries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Delivery (Triggers Background Jobs)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"packageId\": 1,\n  \"delivererId\": 1,\n  \"scheduledAt\": \"2026-01-10T10:00:00Z\",\n  \"notes\": \"Handle with care\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/deliveries",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries"]
+            },
+            "description": "Create delivery - triggers route calculation & receipt generation jobs"
+          }
+        },
+        {
+          "name": "Update Delivery Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/deliveries/1/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Queue Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliveries/queue/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries", "queue", "stats"]
+            },
+            "description": "Monitor background job queue (waiting, active, completed, failed)"
+          }
+        },
+        {
+          "name": "Delete Delivery",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/deliveries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deliveries", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

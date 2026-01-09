@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const config = require('./config');
 const { connectDatabase } = require('./config/database');
+const models = require('./models');
 const { connectRedis } = require('./config/redis');
 
 // Import routes
