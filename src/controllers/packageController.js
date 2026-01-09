@@ -1,4 +1,5 @@
 const { Package, Zone, Deliverer } = require('../models');
+const dispatcherService = require('../services/dispatcherService');
 
 // Get all packages
 exports.getAllPackages = async (req, res) => {
