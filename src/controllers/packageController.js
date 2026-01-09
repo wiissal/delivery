@@ -36,7 +36,7 @@ exports.getAllPackages = async (req, res) => {
 // Get package by ID
 exports.getPackageById = async (req, res) => {
   try {
-    const package = await Package.findByPk(req.params.id, {
+    const pkg = await Package.findByPk(req.params.id, {
       include: [
         {
           model: Zone,
@@ -48,10 +48,10 @@ exports.getPackageById = async (req, res) => {
         },
       ],
     });
-    if (!package) {
+    if (!pkg) {
       return res.status(404).json({ error: 'Package not found' });
     }
-    res.json(package);
+    res.json(pkg);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -72,7 +72,7 @@ exports.createPackage = async (req, res) => {
       zoneId,
     } = req.body;
     
-    const package = await Package.create({
+    const pkg = await Package.create({
       trackingNumber,
       senderName,
       senderPhone,
@@ -84,7 +84,7 @@ exports.createPackage = async (req, res) => {
       zoneId,
     });
     
-    res.status(201).json(package);
+    res.status(201).json(pkg);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -93,12 +93,12 @@ exports.createPackage = async (req, res) => {
 // Update package
 exports.updatePackage = async (req, res) => {
   try {
-    const package = await Package.findByPk(req.params.id);
-    if (!package) {
+    const pkg = await Package.findByPk(req.params.id);
+    if (!pkg) {
       return res.status(404).json({ error: 'Package not found' });
     }
-    await package.update(req.body);
-    res.json(package);
+    await pkg.update(req.body);
+    res.json(pkg);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -159,11 +159,11 @@ exports.autoAssignPackage = async (req, res) => {
 // Delete package
 exports.deletePackage = async (req, res) => {
   try {
-    const package = await Package.findByPk(req.params.id);
-    if (!package) {
+    const pkg = await Package.findByPk(req.params.id);
+    if (!pkg) {
       return res.status(404).json({ error: 'Package not found' });
     }
-    await package.destroy();
+    await pkg.destroy();
     res.json({ message: 'Package deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
