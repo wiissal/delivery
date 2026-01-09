@@ -5,6 +5,9 @@ const deliveryController = require('../controllers/deliveryController');
 // GET all deliveries 
 router.get('/', deliveryController.getAllDeliveries);
 
+// GET queue statistics
+router.get('/queue/stats', deliveryController.getQueueStats);
+
 // GET delivery by ID
 router.get('/:id', deliveryController.getDeliveryById);
 
