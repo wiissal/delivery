@@ -20,16 +20,15 @@ const sequelize = new Sequelize({
 const connectDatabase = async () => {
   try {
     await sequelize.authenticate();
-    console.log(' Database connected successfully');
+    console.log(' Database connection established successfully');
     
-    // Sync models in development
-    if (config.nodeEnv === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log(' Database models synchronized');
-    }
+    // Sync models (force sync in production only once to create tables)
+    await sequelize.sync({ alter: true });
+    console.log(' Database models synchronized');
+    
   } catch (error) {
-    console.error(' Database connection failed:', error.message);
-    process.exit(1);
+    console.error(' Unable to connect to the database:', error.message);
+    throw error;
   }
 };
 
