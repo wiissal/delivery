@@ -2,12 +2,18 @@ const { sequelize } = require('../config/database');
 const { Package, Deliverer } = require('../models');
 
 class DispatcherService {
-   async assignPackageToDeliverer(packageId, delivererId) {
+  
+  /**
+   * Smart assignment with transaction locking
+   * Prevents race conditions when multiple packages try to assign to same deliverer
+   */
+  async assignPackageToDeliverer(packageId, delivererId) {
     const transaction = await sequelize.transaction({
       isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED
     });
+    
     try {
-      //  Lock the deliverer row (FOR UPDATE)
+      // 1. Lock the deliverer row (FOR UPDATE)
       const deliverer = await Deliverer.findByPk(delivererId, {
         lock: transaction.LOCK.UPDATE,
         transaction
@@ -21,7 +27,8 @@ class DispatcherService {
           code: 404
         };
       }
-      //  Check availability and capacity with locked row
+      
+      // 2. Check availability and capacity with locked row
       if (!deliverer.isAvailable) {
         await transaction.rollback();
         return {
@@ -30,13 +37,23 @@ class DispatcherService {
           code: 409
         };
       }
-      //  Lock the package row
-      const package = await Package.findByPk(packageId, {
+      
+      if (deliverer.currentCapacity >= deliverer.maxCapacity) {
+        await transaction.rollback();
+        return {
+          success: false,
+          error: 'Deliverer at max capacity',
+          code: 409
+        };
+      }
+      
+      // 3. Lock the package row
+      const pkg = await Package.findByPk(packageId, {
         lock: transaction.LOCK.UPDATE,
         transaction
       });
       
-      if (!package) {
+      if (!pkg) {
         await transaction.rollback();
         return {
           success: false,
@@ -45,7 +62,7 @@ class DispatcherService {
         };
       }
       
-      if (package.status !== 'pending') {
+      if (pkg.status !== 'pending') {
         await transaction.rollback();
         return {
           success: false,
@@ -53,8 +70,9 @@ class DispatcherService {
           code: 409
         };
       }
-      //  Perform the assignment (both updates in same transaction)
-      await package.update({
+      
+      // 4. Perform the assignment (both updates in same transaction)
+      await pkg.update({
         delivererId,
         status: 'assigned'
       }, { transaction });
@@ -63,22 +81,24 @@ class DispatcherService {
         by: 1, 
         transaction 
       });
-       // Commit transaction
+      
+      // 5. Commit transaction
       await transaction.commit();
       
-      console.log(` Package ${packageId} assigned to Deliverer ${delivererId}`);
+      console.log(`✅ Package ${packageId} assigned to Deliverer ${delivererId}`);
       
       return {
         success: true,
         data: {
-          package,
+          package: pkg,
           deliverer
         }
       };
-      } catch (error) {
+      
+    } catch (error) {
       // Rollback on any error
       await transaction.rollback();
-      console.error(' Assignment failed:', error.message);
+      console.error('❌ Assignment failed:', error.message);
       
       return {
         success: false,
@@ -87,9 +107,12 @@ class DispatcherService {
       };
     }
   }
-  //find the available deliverer in a zone 
-   async findBestDeliverer(zoneId) {
-      try {
+  
+  /**
+   * Find best available deliverer in a zone
+   */
+  async findBestDeliverer(zoneId) {
+    try {
       const deliverer = await Deliverer.findOne({
         where: {
           currentZoneId: zoneId,
@@ -105,27 +128,29 @@ class DispatcherService {
       });
       
       return deliverer;
-       } catch (error) {
-      console.error(' Find best deliverer failed:', error.message);
+    } catch (error) {
+      console.error('❌ Find best deliverer failed:', error.message);
       return null;
     }
   }
-
   
-  //auto assign package to best available deliverer
+  /**
+   * Auto-assign package to best available deliverer
+   */
   async autoAssignPackage(packageId) {
     try {
-      const package = await Package.findByPk(packageId);
+      const pkg = await Package.findByPk(packageId);
       
-      if (!package) {
+      if (!pkg) {
         return {
           success: false,
           error: 'Package not found',
           code: 404
         };
       }
-      //find the best deliverer in the zone 
-       const deliverer = await this.findBestDeliverer(package.zoneId);
+      
+      // Find best deliverer in the zone
+      const deliverer = await this.findBestDeliverer(pkg.zoneId);
       
       if (!deliverer) {
         return {
@@ -134,8 +159,9 @@ class DispatcherService {
           code: 404
         };
       }
-      // assign with transaction locking 
-       return await this.assignPackageToDeliverer(packageId, deliverer.id);
+      
+      // Assign with transaction locking
+      return await this.assignPackageToDeliverer(packageId, deliverer.id);
       
     } catch (error) {
       return {
