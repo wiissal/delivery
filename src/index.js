@@ -68,18 +68,24 @@ const startServer = async () => {
     await connectDatabase();
     await connectRedis();
     
-    app.listen(config.port, () => {
+    const server = app.listen(config.port, () => {
       console.log(` Server running on port ${config.port}`);
       console.log(` Environment: ${config.nodeEnv}`);
     });
+    
+    return server;
   } catch (error) {
     console.error('Failed to start server:', error);
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'test') {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-//only start server if not in test mode 
-if (process.env.NODE_ENV !== 'test') {
+// Only auto-start if this file is run directly (not imported)
+if (require.main === module) {
   startServer();
 }
-module.exports = app; 
+
+module.exports = app;
