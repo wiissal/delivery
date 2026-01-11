@@ -1,6 +1,6 @@
 const { sequelize } = require('../config/database');
 const { Package, Deliverer } = require('../models');
-
+const {op} = require('sequelize');
 class DispatcherService {
   
   /**
@@ -9,7 +9,7 @@ class DispatcherService {
    */
   async assignPackageToDeliverer(packageId, delivererId) {
     const transaction = await sequelize.transaction({
-      isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED
+      isolationLevel: 'READ COMMITTED'
     });
     
     try {
@@ -118,7 +118,7 @@ class DispatcherService {
           currentZoneId: zoneId,
           isAvailable: true,
           currentCapacity: {
-            [sequelize.Op.lt]: sequelize.col('maxCapacity')
+            [Op.lt]: sequelize.col('maxCapacity')
           }
         },
         order: [
