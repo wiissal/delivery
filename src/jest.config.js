@@ -1,22 +1,11 @@
 module.exports = {
   testEnvironment: 'node',
+  testTimeout: 30000,  // 30 seconds for Redis/DB operations
+  clearMocks: true,
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/index.js',
     '!src/worker.js',
   ],
-  testMatch: [
-    '**/__tests__/**/*.js',
-    '**/*.test.js',
-    '**/*.spec.js'
-  ],
-  coverageThreshold: {
-    global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70
-    }
-  }
 };

@@ -1,19 +1,16 @@
 const { sequelize } = require('../config/database');
 const { Package, Deliverer } = require('../models');
-const {op} = require('sequelize');
+const { Op } = require('sequelize');
 class DispatcherService {
   
-  /**
-   * Smart assignment with transaction locking
-   * Prevents race conditions when multiple packages try to assign to same deliverer
-   */
+
   async assignPackageToDeliverer(packageId, delivererId) {
     const transaction = await sequelize.transaction({
       isolationLevel: 'READ COMMITTED'
     });
     
     try {
-      // 1. Lock the deliverer row (FOR UPDATE)
+      //  Lock the deliverer row (FOR UPDATE)
       const deliverer = await Deliverer.findByPk(delivererId, {
         lock: transaction.LOCK.UPDATE,
         transaction
@@ -28,7 +25,7 @@ class DispatcherService {
         };
       }
       
-      // 2. Check availability and capacity with locked row
+      //  Check availability and capacity with locked row
       if (!deliverer.isAvailable) {
         await transaction.rollback();
         return {
@@ -47,7 +44,7 @@ class DispatcherService {
         };
       }
       
-      // 3. Lock the package row
+      //  Lock the package row
       const pkg = await Package.findByPk(packageId, {
         lock: transaction.LOCK.UPDATE,
         transaction
@@ -71,7 +68,7 @@ class DispatcherService {
         };
       }
       
-      // 4. Perform the assignment (both updates in same transaction)
+      // Perform the assignment (both updates in same transaction)
       await pkg.update({
         delivererId,
         status: 'assigned'
@@ -82,10 +79,10 @@ class DispatcherService {
         transaction 
       });
       
-      // 5. Commit transaction
+      //  Commit transaction
       await transaction.commit();
       
-      console.log(`✅ Package ${packageId} assigned to Deliverer ${delivererId}`);
+      console.log(` Package ${packageId} assigned to Deliverer ${delivererId}`);
       
       return {
         success: true,
@@ -108,9 +105,7 @@ class DispatcherService {
     }
   }
   
-  /**
-   * Find best available deliverer in a zone
-   */
+
   async findBestDeliverer(zoneId) {
     try {
       const deliverer = await Deliverer.findOne({
@@ -129,14 +124,12 @@ class DispatcherService {
       
       return deliverer;
     } catch (error) {
-      console.error('❌ Find best deliverer failed:', error.message);
+      console.error(' Find best deliverer failed:', error.message);
       return null;
     }
   }
   
-  /**
-   * Auto-assign package to best available deliverer
-   */
+ 
   async autoAssignPackage(packageId) {
     try {
       const pkg = await Package.findByPk(packageId);
